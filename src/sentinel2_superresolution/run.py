@@ -1,23 +1,5 @@
 """
-This is a skeleton file that can serve as a starting point for a Python
-console script. To run this script uncomment the following lines in the
-``[options.entry_points]`` section in ``setup.cfg``::
-
-    console_scripts =
-         fibonacci = sentinel2_superresolution.skeleton:run
-
-Then run ``pip install .`` (or ``pip install -e .`` for editable mode)
-which will install the command ``fibonacci`` inside your current environment.
-
-Besides console scripts, the header (i.e. until ``_logger``...) of this file can
-also be used as template for Python modules.
-
-Note:
-    This file can be renamed depending on your needs or safely removed if not needed.
-
-References:
-    - https://setuptools.pypa.io/en/latest/userguide/entry_point.html
-    - https://pip.pypa.io/en/stable/reference/pip_install
+Inference script
 """
 
 import argparse
@@ -157,14 +139,15 @@ def parse_args(args):
         type=str,
         help="Path to the onnx export of super-resolution model parameters",
         default=os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), "../../models/carn_light.onnx"
+            os.path.dirname(os.path.abspath(__file__)),
+            "../../models/carn_3x3x64g4sw_bootstrap.onnx",
         ),
     )
     parser.add_argument(
         "-ts",
         "--tile_size",
         type=int,
-        default=1024,
+        default=1000,
         help="Tile size used for inference (expressed output reference system and resolution)",
     )
 
@@ -182,7 +165,16 @@ def parse_args(args):
         type=float,
         nargs=4,
         default=None,
-        help="Restrict region of interest to process (expressed in utm coordinates [left bottom right top]",
+        help="Restrict region of interest to process (expressed in utm coordinates [left bottom right top])",
+    )
+
+    parser.add_argument(
+        "-roip",
+        "--region_of_interest_pixel",
+        type=float,
+        nargs=4,
+        default=None,
+        help="Restrict region of interest to process (expressed in in row/col [left bottom right tol])",
     )
 
     parser.add_argument(
@@ -253,7 +245,17 @@ def main(args):
 
     # Read roi
     roi = s2_ds.bounds
-    if args.region_of_interest is not None:
+    if args.region_of_interest_pixel is not None:
+        logging.info(f"Pixel ROI set, will use it to define target ROI")
+        roi_pixel = rio.coords.BoundingBox(*args.region_of_interest_pixel)
+        roi = rio.coords.BoundingBox(
+            left=s2_ds.bounds.left + 10 * roi_pixel.left,
+            bottom=s2_ds.bounds.bottom + 10 * roi_pixel.bottom,
+            right=s2_ds.bounds.left + 10 * roi_pixel.right,
+            top=s2_ds.bounds.bottom + 10 * roi_pixel.top,
+        )
+    elif args.region_of_interest is not None:
+        logging.info(f"ROI set, will use it to define target ROI")
         roi = rio.coords.BoundingBox(*args.region_of_interest)
 
     # Adjust roi according to margin_in_meters
@@ -333,17 +335,21 @@ def main(args):
             output[np.isnan(output)] = -10000
 
             # Crop margin out
-            cropped_output = output[
-                :, args.overlap : -args.overlap, args.overlap : -args.overlap
-            ]
-            # Find location to write in ouptut image
-            window = rio.windows.Window(
-                int((chunk.target_area.left - roi.left) / 5.0),
-                int((roi.top - chunk.target_area.top) / 5.0),
-                int((chunk.target_area.right - chunk.target_area.left) / 5.0),
-                int((chunk.target_area.top - chunk.target_area.bottom) / 5.0),
-            )
+            if args.overlap != 0:
+                cropped_output = output[
+                    :, args.overlap : -args.overlap, args.overlap : -args.overlap
+                ]
+            else:
+                cropped_output = output
 
+            # Find location to write in ouptut image
+
+            window = rio.windows.Window(
+                int(np.floor((chunk.target_area.left - roi.left) / 5.0)),
+                int(np.floor((roi.top - chunk.target_area.top) / 5.0)),
+                int(np.ceil((chunk.target_area.right - chunk.target_area.left) / 5.0)),
+                int(np.ceil((chunk.target_area.top - chunk.target_area.bottom) / 5.0)),
+            )
             # Write ouptut image
             rio_ds.write(cropped_output, window=window)
 

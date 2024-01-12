@@ -35,7 +35,7 @@ Note the ~--bicubic~ flag, that allows to also generate a bicubic-upsampled imag
 
 * Credits
 
-This work was partly performed using HPC resources from GENCI-IDRIS (Grant 2023-AD010114835)
-This work was partly performed using HPC resources from CNES.
+- This work was partly performed using HPC resources from GENCI-IDRIS (Grant 2023-AD010114835)
+- This work was partly performed using HPC resources from CNES.
 
 

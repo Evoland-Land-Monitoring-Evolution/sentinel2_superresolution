@@ -1,0 +1,41 @@
+#+TITLE: sentinel2_superresolution
+
+Generate 5m super-resolved images from Sentinel-2 L2A (Theia) products (bands B02, B03, B04, B05, B06, B06, B08, B8A, B11 and B12) using Single Image Super-Resolution model trained in the frame of the [[https://www.evo-land.eu/][EVOLAND Horizon Europe]].
+
+The network has been trained in the course of the project using the [[https://doi.org/10.5281/zenodo.6514159][Sen2Venµs dataset]], complimented with B11 and B12 patches.
+
+#+BEGIN_QUOTE
+Michel, J.; Vinasco-Salinas, J.; Inglada, J.; Hagolle, O. SEN2VENµS, a Dataset for the Training of Sentinel-2 Super-Resolution Algorithms. Data 2022, 7, 96. https://doi.org/10.3390/data7070096 
+#+END_QUOTE
+
+
+* Installation
+
+Installing the tool  should be straightforward with pip :
+
+#+begin_src shell
+$ pip install -e git+https://framagit.org/jmichel-otb/sentinel2_superresolution.git
+#+end_src
+
+* Usage
+
+Example of use with a pixel (rows / columns of the 10m input image) ROI :
+
+#+begin_src shell
+$ sentinel2_superesolution -v -i SENTINEL2A_20200808-105933-164_L2A_T31TCG_C_V2-2/ -o results/  --bicubic -roip 2000 2000 2500 2500
+#+end_src
+
+Example of use with a UTM (coordinates of the product) ROI:
+
+#+begin_src shell
+$ sentinel2_superesolution -v -i SENTINEL2A_20200808-105933-164_L2A_T31TCG_C_V2-2/ -o results/  --bicubic -roi 300160.000 4590400.000 304000.000 4594240.000
+#+end_src
+
+Note the ~--bicubic~ flag, that allows to also generate a bicubic-upsampled image to 5 meters in order to compare with the SISR result.
+
+* Credits
+
+This work was partly performed using HPC resources from GENCI-IDRIS (Grant 2023-AD010114835)
+This work was partly performed using HPC resources from CNES.
+
+

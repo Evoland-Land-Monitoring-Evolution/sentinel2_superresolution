@@ -307,8 +307,11 @@ def main(args):
     out_sr_file = os.path.join(
         args.output_directory,
         str(s2_ds.satellite.value)
-        + "_L2A_"
+        + "_"
         + s2_ds.date.strftime("%Y%m%d")
+        + "_L2A_"
+        + "T"
+        + s2_ds.tile
         + "_5m_sisr.tif",
     )
     _logger.info(f"Super-resolved output image: {out_sr_file}")
@@ -359,8 +362,11 @@ def main(args):
         out_bicubic_file = os.path.join(
             args.output_directory,
             str(s2_ds.satellite.value)
-            + "_L2A_"
+            + "_"
             + s2_ds.date.strftime("%Y%m%d")
+            + "_L2A_"
+            + "T"
+            + s2_ds.tile
             + "_5m_bicubic.tif",
         )
         _logger.info(f"Bicubic output image: {out_bicubic_file}")

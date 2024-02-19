@@ -9,10 +9,11 @@ import sys
 from dataclasses import dataclass
 
 import numpy as np
-import onnxruntime as ort
-import rasterio as rio
-from affine import Affine
+import onnxruntime as ort  # type: ignore[import-untyped]
+import rasterio as rio  # type: ignore[import-untyped]
+from affine import Affine  # type: ignore[import-untyped]
 from sensorsio.sentinel2 import Sentinel2
+from sensorsio.sentinel2_l1c import Sentinel2L1C
 from tqdm import tqdm
 
 
@@ -126,6 +127,9 @@ def parse_args(args):
     )
 
     parser.add_argument(
+        "--l1c", action="store_true", help="Input product is Sentinel2 L1C"
+    )
+    parser.add_argument(
         "-o",
         "--output_directory",
         type=str,
@@ -219,7 +223,38 @@ def main(args):
     args = parse_args(args)
     setup_logging(args.loglevel)
 
-    s2_ds = Sentinel2(args.input)
+    if args.l1c:
+        s2_ds = Sentinel2L1C(args.input)
+        # Bands that will be processed
+        bands = [
+            Sentinel2L1C.B2,
+            Sentinel2L1C.B3,
+            Sentinel2L1C.B4,
+            Sentinel2L1C.B8,
+            Sentinel2L1C.B5,
+            Sentinel2L1C.B6,
+            Sentinel2L1C.B7,
+            Sentinel2L1C.B8A,
+            Sentinel2L1C.B11,
+            Sentinel2L1C.B12,
+        ]
+        level = "_L1C_"
+    else:
+        s2_ds = Sentinel2(args.input)
+        # Bands that will be processed
+        bands = [
+            Sentinel2.B2,
+            Sentinel2.B3,
+            Sentinel2.B4,
+            Sentinel2.B8,
+            Sentinel2.B5,
+            Sentinel2.B6,
+            Sentinel2.B7,
+            Sentinel2.B8A,
+            Sentinel2.B11,
+            Sentinel2.B12,
+        ]
+        level = "_L2A_"
 
     _logger.info(f"Will process {s2_ds}")
     _logger.info(f"Bounds: {s2_ds.bounds}, {s2_ds.crs}")
@@ -270,20 +305,6 @@ def main(args):
     chunks = generate_chunks(roi, tile_size_in_meters, margin_in_meters)
     _logger.info(f"Will process {len(chunks)} image chunks")
 
-    # Bands that will be processed
-    bands = [
-        Sentinel2.B2,
-        Sentinel2.B3,
-        Sentinel2.B4,
-        Sentinel2.B8,
-        Sentinel2.B5,
-        Sentinel2.B6,
-        Sentinel2.B7,
-        Sentinel2.B8A,
-        Sentinel2.B11,
-        Sentinel2.B12,
-    ]
-
     # Output tiff profile
     geotransform = (roi[0], 5.0, 0.0, roi[3], 0.0, -5.0)
     transform = Affine.from_gdal(*geotransform)
@@ -309,7 +330,7 @@ def main(args):
         str(s2_ds.satellite.value)
         + "_"
         + s2_ds.date.strftime("%Y%m%d")
-        + "_L2A_"
+        + level
         + "T"
         + s2_ds.tile
         + "_5m_sisr.tif",

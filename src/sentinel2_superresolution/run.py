@@ -195,6 +195,10 @@ def parse_args(args):
         help="Also generate bicubic upsampled image",
     )
 
+    parser.add_argument(
+        "--gpu", action="store_true", help="Run inference on GPUs if available"
+    )
+
     return parser.parse_args(args)
 
 
@@ -268,6 +272,10 @@ def main(args):
 
     # Execute on cpu only
     ep_list = ["CPUExecutionProvider"]
+
+    if args.gpu:
+        _logger.info(f"Will run on GPU if available")
+        ep_list.insert(0, "CUDAExecutionProvider")
 
     # Create inference session
     ort_session = ort.InferenceSession(args.model, sess_options=so, providers=ep_list)

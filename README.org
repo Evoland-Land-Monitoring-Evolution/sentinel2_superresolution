@@ -11,13 +11,33 @@ Michel, J.; Vinasco-Salinas, J.; Inglada, J.; Hagolle, O. SEN2VENµS, a Dataset 
 
 * Installation
 
-Installing the tool  should be straightforward with pip :
+** CPU inference
+Beforehand, one should install latest version of *sensorsio*, which is not yet available in pypi:
+
+#+begin_src shell
+$ pip install -e git+https://framagit.org/jmichel-otb/sensorsio.git
+#+end_src
+
+Installing the tool should then be straightforward with pip :
 
 #+begin_src shell
 $ pip install -e git+https://framagit.org/jmichel-otb/sentinel2_superresolution.git
 #+end_src
 
+** Additional steps for GPU inference
+
+In order to perform GPU inference (using the ~--gpu~ command-line switch), first make sure that the following package are installed:
+- ~cuda-python~
+
+You can then install gpu support with:
+#+begin_src shell
+$ pip install -e git+https://framagit.org/jmichel-otb/sentinel2_superresolution.git[gpu]
+#+end_src
+
+
 * Usage
+
+** Pixel rows / columns region of interest
 
 Example of use with a pixel (rows / columns of the 10m input image) ROI :
 
@@ -25,6 +45,9 @@ Example of use with a pixel (rows / columns of the 10m input image) ROI :
 $ sentinel2_superesolution -v -i SENTINEL2A_20200808-105933-164_L2A_T31TCG_C_V2-2/ -o results/  --bicubic -roip 2000 2000 2500 2500
 #+end_src
 
+Note the ~--bicubic~ flag, that allows to also generate a bicubic-upsampled image to 5 meters in order to compare with the SISR result.
+
+** UTM coordinates region of interest
 Example of use with a UTM (coordinates of the product) ROI:
 
 #+begin_src shell
@@ -32,6 +55,32 @@ $ sentinel2_superesolution -v -i SENTINEL2A_20200808-105933-164_L2A_T31TCG_C_V2-
 #+end_src
 
 Note the ~--bicubic~ flag, that allows to also generate a bicubic-upsampled image to 5 meters in order to compare with the SISR result.
+
+** Using L1C product as input
+
+#+begin_src shell
+$ sentinel2_superesolution -i S2B_MSIL1C_20231126T105309_N0509_R051_T31TCJ_20231126T113937.SAFE/ -roip 0 0 512 512 --l1c -o results/
+#+end_src
+
+*Note:* Do not forget the ~--l1c~ flag, as the tool will not detect the product format automatically.
+
+** Inference on GPU
+
+#+begin_src shell
+sentinel2_superesolution -i SENTINEL2B_20230219-105857-687_L2A_T31TCJ_C_V3-1 -o resumts/ --gpu
+#+end_src
+
+Add the ~--gpu~ switch. If there are no GPUs available or correctly configured, the tool will fallback to CPU inference.
+
+* Inference-time
+
+Here are orders of magnitude for full-product inference time:
+
+|       | *CPU (1 core)* | *CPU (8 cores)* | *GPU*     |
+|-------+----------------+-----------------+-----------|
+| *L1C* | 6 hours        | 1 hour          | 6 minutes |
+| *L2A* | 5 hours        | 50 minutes      | 5 minutes |
+
 
 * Credits
 

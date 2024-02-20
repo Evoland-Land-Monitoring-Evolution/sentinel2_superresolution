@@ -72,14 +72,14 @@ sentinel2_superesolution -i SENTINEL2B_20230219-105857-687_L2A_T31TCJ_C_V3-1 -o 
 
 Add the ~--gpu~ switch. If there are no GPUs available or correctly configured, the tool will fallback to CPU inference.
 
-* Inference-time
+* Inference time for full products
 
-Here are orders of magnitude for full-product inference time:
+Here are orders of magnitude for full products inference time:
 
-|       | *CPU (1 core)* | *CPU (8 cores)* | *GPU*     |
-|-------+----------------+-----------------+-----------|
-| *L1C* | 6 hours        | 1 hour          | 6 minutes |
-| *L2A* | 5 hours        | 50 minutes      | 5 minutes |
+|       | *CPU (1 core)* | *CPU (8 cores)* | *GPU (A100)*     |
+|-------+----------------+-----------------+------------------|
+| *L1C* | 6 hours        | 1 hour          | 6 minutes        |
+| *L2A* | 5 hours        | 50 minutes      | 5 minutes        |
 
 
 * Credits

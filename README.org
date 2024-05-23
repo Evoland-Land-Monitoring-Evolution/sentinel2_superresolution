@@ -26,7 +26,7 @@ In order to perform GPU inference (using the ~--gpu~ command-line switch), first
 
 You can then install gpu support with:
 #+begin_src shell
-$ pip install "sentinel2_superresolution[gpu] @ git+https://framagit.org/jmichel-otb/sentinel2_superresolution.git"
+$ pip install "sentinel2_superresolution[gpu] @ git+https://github.com/Evoland-Land-Monitoring-Evolution/sentinel2_superresolution.git"
 #+end_src
 
 

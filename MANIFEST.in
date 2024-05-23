@@ -1,1 +1,1 @@
-recursive-include models *
+include src/sentinel2_superresolution/models/*.onnx

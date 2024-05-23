@@ -144,7 +144,7 @@ def parse_args(args):
         help="Path to the onnx export of super-resolution model parameters",
         default=os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
-            "../../models/carn_3x3x64g4sw_bootstrap.onnx",
+            "models/carn_3x3x64g4sw_bootstrap.onnx",
         ),
     )
     parser.add_argument(

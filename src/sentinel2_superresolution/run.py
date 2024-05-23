@@ -399,21 +399,37 @@ def main(args):
             + "_5m_bicubic.tif",
         )
         _logger.info(f"Bicubic output image: {out_bicubic_file}")
-
-        data_array = s2_ds.read_as_numpy(
-            bounds=roi,
-            bands=bands,
-            masks=None,
-            resolution=5,
-            scale=1.0,
-            no_data_value=np.nan,
-            algorithm=rio.enums.Resampling.cubic,
-        )[0]
-
-        data_array[np.isnan(data_array)] = -10000
-
+        chunks = generate_chunks(roi, tile_size_in_meters, margin_in_meters=0.0)
         with rio.open(out_bicubic_file, "w", **profile) as rio_ds:
-            rio_ds.write(data_array)
+            for chunk in tqdm(
+                chunks, total=len(chunks), desc="Bicubic in progress ..."
+            ):
+                bicubic_array = s2_ds.read_as_numpy(
+                    bounds=chunk.source_area,
+                    bands=bands,
+                    masks=None,
+                    resolution=5,
+                    scale=1.0,
+                    no_data_value=np.nan,
+                    algorithm=rio.enums.Resampling.cubic,
+                )[0]
+
+                bicubic_array[np.isnan(bicubic_array)] = -10000
+                window = rio.windows.Window(
+                    int(np.floor((chunk.target_area.left - roi.left) / 5.0)),
+                    int(np.floor((roi.top - chunk.target_area.top) / 5.0)),
+                    int(
+                        np.ceil(
+                            (chunk.target_area.right - chunk.target_area.left) / 5.0
+                        )
+                    ),
+                    int(
+                        np.ceil(
+                            (chunk.target_area.top - chunk.target_area.bottom) / 5.0
+                        )
+                    ),
+                )
+                rio_ds.write(bicubic_array, window=window)
 
 
 def run():

@@ -1,6 +1,6 @@
 #+TITLE: sentinel2_superresolution
 
-Generate 5m super-resolved images from Sentinel-2 L2A (Theia) products (bands B02, B03, B04, B05, B06, B06, B08, B8A, B11 and B12) using Single Image Super-Resolution model trained in the frame of the [[https://www.evo-land.eu/][EVOLAND Horizon Europe]].
+Generate 5m super-resolved images from Sentinel-2 L2A (Theia) products (bands B02, B03, B04, B05, B06, B07, B08, B8A, B11 and B12) using Single Image Super-Resolution model trained in the frame of the [[https://www.evo-land.eu/][EVOLAND Horizon Europe]].
 
 The network has been trained in the course of the project using the [[https://doi.org/10.5281/zenodo.6514159][Sen2Venµs dataset]], complimented with B11 and B12 patches.
 
@@ -71,6 +71,29 @@ sentinel2_superesolution -i SENTINEL2B_20230219-105857-687_L2A_T31TCJ_C_V3-1 -o 
 #+end_src
 
 Add the ~--gpu~ switch. If there are no GPUs available or correctly configured, the tool will fallback to CPU inference.
+
+* Frequently asked Questions
+
+Here is a list of questions that have been frequently asked.
+
+** Bands order
+Bands in output image follow the following order: B2, B3, B4, B8, B5, B6, B7, B8A, B11, B12
+
+** L2A only
+Processed bands are the FRE variants (Flat Reflectence).
+
+** L1C only
+[[https://scihub.copernicus.eu/news/News00931][Radiometric offsets]] are not applied and should be applied by the user after super-resolution.
+
+** FileNotFoundError : Could not find root XML file
+
+If you encounter the following:
+#+begin_src shell
+raise FileNotFoundError(
+FileNotFoundError: Could not find root XML file in product directory data/S2B_MSIL2A_20240424T054639_N0510_R048_T43SCS_20240424T080948.SAFE****
+#+end_src
+
+It is likely that you are trying to process Sen2corr L2A. Currently *sentinel2_superresolution* only supports Theia L2A products from [[https://theia.cnes.fr]].
 
 * Inference time for full products
 

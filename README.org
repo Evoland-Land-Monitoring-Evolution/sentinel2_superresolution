@@ -12,11 +12,6 @@ Michel, J.; Vinasco-Salinas, J.; Inglada, J.; Hagolle, O. SEN2VENµS, a Dataset 
 * Installation
 
 ** CPU inference
-Beforehand, one should install latest version of *sensorsio*, which is not yet available in pypi:
-
-#+begin_src shell
-$ pip install git+https://framagit.org/jmichel-otb/sensorsio.git
-#+end_src
 
 Installing the tool should then be straightforward with pip :
 
@@ -31,7 +26,7 @@ In order to perform GPU inference (using the ~--gpu~ command-line switch), first
 
 You can then install gpu support with:
 #+begin_src shell
-$ pip install git+https://framagit.org/jmichel-otb/sentinel2_superresolution.git[gpu]
+$ pip install "sentinel2_superresolution[gpu] @ git+https://framagit.org/jmichel-otb/sentinel2_superresolution.git"
 #+end_src
 
 

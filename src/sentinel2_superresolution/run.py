@@ -14,6 +14,7 @@ import rasterio as rio  # type: ignore[import-untyped]
 from affine import Affine  # type: ignore[import-untyped]
 from sensorsio.sentinel2 import Sentinel2
 from sensorsio.sentinel2_l1c import Sentinel2L1C
+from sensorsio.utils import bb_snap
 from tqdm import tqdm
 
 
@@ -298,8 +299,10 @@ def main(args):
             top=s2_ds.bounds.bottom + 10 * roi_pixel.top,
         )
     elif args.region_of_interest is not None:
-        logging.info(f"ROI set, will use it to define target ROI")
-        roi = rio.coords.BoundingBox(*args.region_of_interest)
+        logging.info(
+            f"ROI set, will use it to define target ROI. Note that provided ROI will be snapped to the 10m Sentinel-2 sampling grid."
+        )
+        roi = bb_snap(rio.coords.BoundingBox(*args.region_of_interest), align=10)
 
     # Adjust roi according to margin_in_meters
     roi = rio.coords.BoundingBox(

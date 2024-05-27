@@ -78,7 +78,7 @@ Bands in output image follow the following order: B2, B3, B4, B8, B5, B6, B7, B8
 Processed bands are the FRE variants (Flat Reflectence).
 
 ** L1C only
-[[https://scihub.copernicus.eu/news/News00931][Radiometric offsets]] are not applied and should be applied by the user after super-resolution.
+Upon reading of the product, sensorsio applies the -1000 radiometric offset depending on the product version.
 
 ** FileNotFoundError : Could not find root XML file
 

@@ -293,8 +293,8 @@ def main(args):
         logging.info(f"Pixel ROI set, will use it to define target ROI")
 
         if (
-            args.region_of_interest_pixel[2] > args.region_of_interest_pixel[0]
-            or args.region_of_interest_pixel[3] >= args.region_of_interest_pixel[1]
+            args.region_of_interest_pixel[2] <= args.region_of_interest_pixel[0]
+            or args.region_of_interest_pixel[3] <= args.region_of_interest_pixel[1]
         ):
             logging.error(
                 "Inconsistent coordinates for region_of_interest_pixel parameter:"
@@ -305,9 +305,9 @@ def main(args):
         roi_pixel = rio.coords.BoundingBox(*args.region_of_interest_pixel)
         roi = rio.coords.BoundingBox(
             left=s2_ds.bounds.left + 10 * roi_pixel.left,
-            bottom=s2_ds.bounds.bottom + 10 * roi_pixel.bottom,
+            bottom=s2_ds.bounds.top - 10 * roi_pixel.top,
             right=s2_ds.bounds.left + 10 * roi_pixel.right,
-            top=s2_ds.bounds.bottom + 10 * roi_pixel.top,
+            top=s2_ds.bounds.top - 10 * roi_pixel.bottom,
         )
     elif args.region_of_interest is not None:
         logging.info(

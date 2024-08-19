@@ -73,8 +73,8 @@ def generate_chunks(
 from sentinel2_superresolution import __version__
 
 __author__ = "Julien Michel"
-__copyright__ = "Julien Michel"
-__license__ = "AGPL-3.0-or-later"
+__copyright__ = "CESBIO/CNES"
+__license__ = "Apache_2.0"
 
 _logger = logging.getLogger(__name__)
 

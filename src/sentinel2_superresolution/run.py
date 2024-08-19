@@ -179,7 +179,7 @@ def parse_args(args):
         type=float,
         nargs=4,
         default=None,
-        help="Restrict region of interest to process (expressed in in row/col [left bottom right tol])",
+        help="Restrict region of interest to process (expressed in in row/col [col_start line_start col_end line_end])",
     )
 
     parser.add_argument(

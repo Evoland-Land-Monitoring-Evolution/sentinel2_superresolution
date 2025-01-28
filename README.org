@@ -14,6 +14,26 @@ Additional model trained in the following work are also included (see section [[
 Julien Michel, Ekaterina Kalinicheva, Jordi Inglada. Revisiting remote sensing cross-sensor Single Image Super-Resolution: the overlooked impact of geometric and radiometric distortion. 2024. https://hal.science/hal-04723225v1
 #+END_QUOTE
 
+* Table of Contents  :TOC:
+- [[#installation][Installation]]
+  - [[#cpu-inference][CPU inference]]
+  - [[#additional-steps-for-gpu-inference][Additional steps for GPU inference]]
+- [[#usage][Usage]]
+  - [[#pixel-rows--columns-region-of-interest][Pixel rows / columns region of interest]]
+  - [[#utm-coordinates-region-of-interest][UTM coordinates region of interest]]
+  - [[#using-l1c-product-as-input][Using L1C product as input]]
+  - [[#inference-on-gpu][Inference on GPU]]
+- [[#additional-models][Additional models]]
+- [[#changelog][Changelog]]
+  - [[#with-respect-to-version-100][With respect to version 1.0.0]]
+- [[#frequently-asked-questions][Frequently asked Questions]]
+  - [[#bands-order][Bands order]]
+  - [[#l2a-only][L2A only]]
+  - [[#l1c-only][L1C only]]
+  - [[#filenotfounderror--could-not-find-root-xml-file][FileNotFoundError : Could not find root XML file]]
+- [[#inference-time-for-full-products][Inference time for full products]]
+- [[#credits][Credits]]
+
 * Installation
 
 ** CPU inference

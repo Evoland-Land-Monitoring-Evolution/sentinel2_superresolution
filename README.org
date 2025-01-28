@@ -112,6 +112,14 @@ The ~yaml~ can then be passed to the ~-m~ switch of ~sentinel2_superresolution~.
 
 Merge Requests are welcome if you want o include your own model in the models distributed with the tool.
 
+* Changelog
+
+** With respect to version 1.0.0
+
+- The ~-ov~ switch has been removed since the amount of overlap depends on the model and should not be changed by the user
+- The ~-m~ switch now requires a path to the ~yaml~ file documenting the onnx exported model
+- Several additional models have been included in file:src/sentinel2_superresolution/models/
+
 * Frequently asked Questions
 
 Here is a list of questions that have been frequently asked.

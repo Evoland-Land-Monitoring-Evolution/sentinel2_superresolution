@@ -1,0 +1,8 @@
+bands:
+- B2
+- B3
+- B4
+- B8
+factor: 4.0
+margin: 130
+model: wsx4_spatrad.onnx

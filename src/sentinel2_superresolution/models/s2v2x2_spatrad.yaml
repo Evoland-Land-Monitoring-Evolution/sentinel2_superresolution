@@ -1,0 +1,8 @@
+bands:
+- B2
+- B3
+- B4
+- B8
+factor: 2.0
+margin: 66
+model: s2v2x2_spatrad.onnx

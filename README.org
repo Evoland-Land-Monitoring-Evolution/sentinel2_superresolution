@@ -2,12 +2,17 @@
 
 Generate 5m super-resolved images from Sentinel-2 L2A (Theia) products (bands B02, B03, B04, B05, B06, B07, B08, B8A, B11 and B12) using Single Image Super-Resolution model trained in the frame of the [[https://www.evo-land.eu/][EVOLAND Horizon Europe]].
 
-The network has been trained in the course of the project using the [[https://doi.org/10.5281/zenodo.6514159][Sen2Venµs dataset]], complimented with B11 and B12 patches.
+The default network has been trained in the course of the project using the [[https://doi.org/10.5281/zenodo.6514159][Sen2Venµs dataset]], complimented with B11 and B12 patches.
 
 #+BEGIN_QUOTE
 Michel, J.; Vinasco-Salinas, J.; Inglada, J.; Hagolle, O. SEN2VENµS, a Dataset for the Training of Sentinel-2 Super-Resolution Algorithms. Data 2022, 7, 96. https://doi.org/10.3390/data7070096 
 #+END_QUOTE
 
+Additional model trained in the following work are also included (see section [[Additional models]]).
+
+#+BEGIN_QUOTE
+Julien Michel, Ekaterina Kalinicheva, Jordi Inglada. Revisiting remote sensing cross-sensor Single Image Super-Resolution: the overlooked impact of geometric and radiometric distortion. 2024. https://hal.science/hal-04723225v1
+#+END_QUOTE
 
 * Installation
 
@@ -62,10 +67,50 @@ $ sentinel2_superesolution -i S2B_MSIL1C_20231126T105309_N0509_R051_T31TCJ_20231
 ** Inference on GPU
 
 #+begin_src shell
-sentinel2_superesolution -i SENTINEL2B_20230219-105857-687_L2A_T31TCJ_C_V3-1 -o resumts/ --gpu
+sentinel2_superesolution -i SENTINEL2B_20230219-105857-687_L2A_T31TCJ_C_V3-1 -o results/ --gpu
 #+end_src
 
 Add the ~--gpu~ switch. If there are no GPUs available or correctly configured, the tool will fallback to CPU inference.
+
+* Additional models
+
+Starting v2.0.0, the tool provides the opportunity to plug additional models for comparison. The following models are provided with the tool in file:src/sentinel2_superresolution/models:
+
+| *Yaml file*                      | *Model* | *Dataset for training* | *Bands*                  | *Source*  | *Target*   | *Comment*                      |
+|----------------------------------+---------+------------------------+--------------------------+-----------+------------+--------------------------------|
+| ~carn_3x3x64g4sw_bootstrap.yaml~ | CARN    | Sen2Venµs              | B02, B03, B04, B05, B06, | 10 meters | 5 meters   | *Default model*                |
+|                                  |         |                        | B07, B08, B8A, B11, B12  |           |            |                                |
+| ~s2v2x2_spatrad.yaml~            | ESRGAN  | Sen2Venµs              | B02, B03, B04, B08       | 10 meters | 5 meters   | s2v2x2 model from [[https://hal.science/hal-04723225v1][hal-04723225]] |
+| ~s2v2x4_spatrad.yaml~            | ESRGAN  | Sen2Venµs              | B05, B06, B07, B8A       | 20 meters | 5 meters   | s2v2x4 model from [[https://hal.science/hal-04723225v1][hal-04723225]] |
+| ~wsx2_spatrad.yaml~              | ESRGAN  | WorldStrat             | B02, B03, B04, B08       | 10 meters | 5 meters   | wsx2 model from [[https://hal.science/hal-04723225v1][hal-04723225]]   |
+| ~wsx4_spatrad.yaml~              | ESRGAN  | WorldStrat             | B02, B03, B04, B08       | 10 meters | 2.5 meters | wsx4 model from [[https://hal.science/hal-04723225v1][hal-04723225]]   |
+
+
+Additional models can be run with the following command:
+
+#+begin_src shell
+sentinel2_superesolution -i SENTINEL2B_20230219-105857-687_L2A_T31TCJ_C_V3-1 -o results/ -m src/sentinel2_superresolution/models/wsx4_spatrad.yaml --gpu
+#+end_src
+
+
+It is also possible to plug external super-resolution models in the tool. They should be first exported to an ~onnx~ model that accepts a tensor  of shape ~[b,c,w,h]~ and outputs a tensor of shape ~[b,c,w*f, h*f]~, where ~b~ is the batch dimension, ~c~ the number of channels, ~w~ and ~h~ are the patch spatial dimension and ~f~ is the model super-resolution factor. 
+
+The ~onnx~ model should then be documented by a small ~yaml~ file as follows:
+
+#+begin_src yaml
+bands: # List the bands that are processed by the model, in the correct order
+- B2
+- B3
+- B4
+- B8
+factor: 2.0 # The super-resolution factor of the model
+margin: 66 # The margin that should be applied to avoid tile artifacts (e.g. receptive field of the model)
+model: wsx2_spatrad.onnx # relative path to the model's onnx parameters
+#+end_src
+
+The ~yaml~ can then be passed to the ~-m~ switch of ~sentinel2_superresolution~.
+
+Merge Requests are welcome if you want o include your own model in the models distributed with the tool.
 
 * Frequently asked Questions
 

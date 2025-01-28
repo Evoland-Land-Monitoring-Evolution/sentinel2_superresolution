@@ -165,7 +165,7 @@ It is likely that you are trying to process Sen2corr L2A. Currently *sentinel2_s
 
 * Inference time for full products
 
-Here are orders of magnitude for full products inference time:
+Here are orders of magnitude for full products inference time of the default model:
 
 |       | *CPU (1 core)* | *CPU (8 cores)* | *GPU (A100)*     |
 |-------+----------------+-----------------+------------------|

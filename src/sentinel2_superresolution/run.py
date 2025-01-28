@@ -7,15 +7,40 @@ import logging
 import os
 import sys
 from dataclasses import dataclass
+from pathlib import Path
 
 import numpy as np
 import onnxruntime as ort  # type: ignore[import-untyped]
 import rasterio as rio  # type: ignore[import-untyped]
+import yaml
 from affine import Affine  # type: ignore[import-untyped]
 from sensorsio.sentinel2 import Sentinel2
 from sensorsio.sentinel2_l1c import Sentinel2L1C
 from sensorsio.utils import bb_snap
 from tqdm import tqdm
+
+
+@dataclass(frozen=True)
+class ModelParameters:
+    model: str
+    bands: list[str]
+    margin: int
+    factor: float
+
+
+def read_model_parameters(cfg: str):
+    """
+    Read yaml file describing model
+    """
+    with open(cfg, "r") as f:
+        cfg_dict = yaml.safe_load(f)
+
+        return ModelParameters(
+            model=cfg_dict["model"],
+            bands=cfg_dict["bands"],
+            margin=cfg_dict["margin"],
+            factor=cfg_dict["factor"],
+        )
 
 
 @dataclass(frozen=True)
@@ -96,7 +121,7 @@ def parse_args(args):
       :obj:`argparse.Namespace`: command line parameters namespace
     """
     parser = argparse.ArgumentParser(
-        description="5m super-resolultion of Sentinel2 L2A products (Theia format)"
+        description="Super-resolultion of Sentinel2 L2A products (Theia format)"
     )
     parser.add_argument(
         "--version",
@@ -142,10 +167,10 @@ def parse_args(args):
         "-m",
         "--model",
         type=str,
-        help="Path to the onnx export of super-resolution model parameters",
+        help="Path to the yaml file describing the model",
         default=os.path.join(
             os.path.dirname(os.path.abspath(__file__)),
-            "models/carn_3x3x64g4sw_bootstrap.onnx",
+            "models/carn_3x3x64g4sw_bootstrap.yaml",
         ),
     )
     parser.add_argument(
@@ -154,14 +179,6 @@ def parse_args(args):
         type=int,
         default=1000,
         help="Tile size used for inference (expressed output reference system and resolution)",
-    )
-
-    parser.add_argument(
-        "-ov",
-        "--overlap",
-        type=int,
-        default=32,
-        help="Overlap between tiles to use during inference",
     )
 
     parser.add_argument(
@@ -179,7 +196,7 @@ def parse_args(args):
         type=float,
         nargs=4,
         default=None,
-        help="Restrict region of interest to process (expressed in in row/col [col_start line_start col_end line_end])",
+        help="Restrict region of interest to process (expressed in in row/col [col_start line_start col_end line_end], with respect to 10 meter pixels)",
     )
 
     parser.add_argument(
@@ -228,42 +245,34 @@ def main(args):
     args = parse_args(args)
     setup_logging(args.loglevel)
 
+    # Read model parameters from the yaml file
+    model_parameters = read_model_parameters(args.model)
+
     if args.l1c:
         s2_ds = Sentinel2L1C(args.input)
         # Bands that will be processed
-        bands = [
-            Sentinel2L1C.B2,
-            Sentinel2L1C.B3,
-            Sentinel2L1C.B4,
-            Sentinel2L1C.B8,
-            Sentinel2L1C.B5,
-            Sentinel2L1C.B6,
-            Sentinel2L1C.B7,
-            Sentinel2L1C.B8A,
-            Sentinel2L1C.B11,
-            Sentinel2L1C.B12,
-        ]
+        bands = [Sentinel2L1C.Band(b) for b in model_parameters.bands]
         level = "_L1C_"
     else:
         s2_ds = Sentinel2(args.input)
         # Bands that will be processed
-        bands = [
-            Sentinel2.B2,
-            Sentinel2.B3,
-            Sentinel2.B4,
-            Sentinel2.B8,
-            Sentinel2.B5,
-            Sentinel2.B6,
-            Sentinel2.B7,
-            Sentinel2.B8A,
-            Sentinel2.B11,
-            Sentinel2.B12,
-        ]
+        bands = [Sentinel2.Band(b) for b in model_parameters.bands]
         level = "_L2A_"
+
+    # At which resolution should we load data ?
+    if any(map(lambda v: v in ["B2", "B3", "B4", "B8"], model_parameters.bands)):
+        source_resolution = 10.0
+    else:
+        source_resolution = 20.0
+    target_resolution = source_resolution / model_parameters.factor
 
     _logger.info(f"Will process {s2_ds}")
     _logger.info(f"Bounds: {s2_ds.bounds}, {s2_ds.crs}")
     _logger.info(f"Will use model {args.model}")
+    _logger.info(
+        f"Will process the following bands {bands} at {source_resolution} meter resolution"
+    )
+    _logger.info(f"Target resolution is {target_resolution} meter")
 
     # ONNX inference session options
     so = ort.SessionOptions()
@@ -279,13 +288,18 @@ def main(args):
         ep_list.insert(0, "CUDAExecutionProvider")
 
     # Create inference session
-    ort_session = ort.InferenceSession(args.model, sess_options=so, providers=ep_list)
+    onnx_model_path = os.path.join(
+        Path(args.model).parent.resolve(), model_parameters.model
+    )
+    ort_session = ort.InferenceSession(
+        onnx_model_path, sess_options=so, providers=ep_list
+    )
 
     ro = ort.RunOptions()
     ro.add_run_config_entry("log_severity_level", "3")
 
-    tile_size_in_meters = 5 * args.tile_size
-    margin_in_meters = 5 * args.overlap
+    tile_size_in_meters = target_resolution * args.tile_size
+    margin_in_meters = target_resolution * model_parameters.margin
 
     # Read roi
     roi = s2_ds.bounds
@@ -328,14 +342,14 @@ def main(args):
     _logger.info(f"Will process {len(chunks)} image chunks")
 
     # Output tiff profile
-    geotransform = (roi[0], 5.0, 0.0, roi[3], 0.0, -5.0)
+    geotransform = (roi[0], target_resolution, 0.0, roi[3], 0.0, -target_resolution)
     transform = Affine.from_gdal(*geotransform)
 
     profile = {
         "driver": "GTiff",
-        "height": int((roi[3] - roi[1]) / 5.0),
-        "width": int((roi[2] - roi[0]) / 5.0),
-        "count": 10,
+        "height": int((roi[3] - roi[1]) / target_resolution),
+        "width": int((roi[2] - roi[0]) / target_resolution),
+        "count": len(bands),
         "dtype": np.int16,
         "crs": s2_ds.crs,
         "transform": transform,
@@ -355,7 +369,9 @@ def main(args):
         + level
         + "T"
         + s2_ds.tile
-        + "_5m_sisr.tif",
+        + "_"
+        + str(target_resolution).replace(".", "m").rstrip("0")
+        + "_sisr.tif",
     )
     _logger.info(f"Super-resolved output image: {out_sr_file}")
 
@@ -367,7 +383,7 @@ def main(args):
                 bounds=chunk.source_area,
                 bands=bands,
                 masks=None,
-                resolution=10,
+                resolution=source_resolution,
                 scale=1.0,
                 no_data_value=np.nan,
                 algorithm=rio.enums.Resampling.cubic,
@@ -381,9 +397,11 @@ def main(args):
             output[np.isnan(output)] = -10000
 
             # Crop margin out
-            if args.overlap != 0:
+            if model_parameters.margin != 0:
                 cropped_output = output[
-                    :, args.overlap : -args.overlap, args.overlap : -args.overlap
+                    :,
+                    model_parameters.margin : -model_parameters.margin,
+                    model_parameters.margin : -model_parameters.margin,
                 ]
             else:
                 cropped_output = output
@@ -391,10 +409,20 @@ def main(args):
             # Find location to write in ouptut image
 
             window = rio.windows.Window(
-                int(np.floor((chunk.target_area.left - roi.left) / 5.0)),
-                int(np.floor((roi.top - chunk.target_area.top) / 5.0)),
-                int(np.ceil((chunk.target_area.right - chunk.target_area.left) / 5.0)),
-                int(np.ceil((chunk.target_area.top - chunk.target_area.bottom) / 5.0)),
+                int(np.floor((chunk.target_area.left - roi.left) / target_resolution)),
+                int(np.floor((roi.top - chunk.target_area.top) / target_resolution)),
+                int(
+                    np.ceil(
+                        (chunk.target_area.right - chunk.target_area.left)
+                        / target_resolution
+                    )
+                ),
+                int(
+                    np.ceil(
+                        (chunk.target_area.top - chunk.target_area.bottom)
+                        / target_resolution
+                    )
+                ),
             )
             # Write ouptut image
             rio_ds.write(cropped_output, window=window)
@@ -410,7 +438,9 @@ def main(args):
             + "_L2A_"
             + "T"
             + s2_ds.tile
-            + "_5m_bicubic.tif",
+            + "_"
+            + str(target_resolution).replace(".", "m").rstrip("0")
+            + "_bicubic.tif",
         )
         _logger.info(f"Bicubic output image: {out_bicubic_file}")
         chunks = generate_chunks(roi, tile_size_in_meters, margin_in_meters=0.0)
@@ -422,7 +452,7 @@ def main(args):
                     bounds=chunk.source_area,
                     bands=bands,
                     masks=None,
-                    resolution=5,
+                    resolution=target_resolution,
                     scale=1.0,
                     no_data_value=np.nan,
                     algorithm=rio.enums.Resampling.cubic,
@@ -430,16 +460,24 @@ def main(args):
 
                 bicubic_array[np.isnan(bicubic_array)] = -10000
                 window = rio.windows.Window(
-                    int(np.floor((chunk.target_area.left - roi.left) / 5.0)),
-                    int(np.floor((roi.top - chunk.target_area.top) / 5.0)),
+                    int(
+                        np.floor(
+                            (chunk.target_area.left - roi.left) / target_resolution
+                        )
+                    ),
+                    int(
+                        np.floor((roi.top - chunk.target_area.top) / target_resolution)
+                    ),
                     int(
                         np.ceil(
-                            (chunk.target_area.right - chunk.target_area.left) / 5.0
+                            (chunk.target_area.right - chunk.target_area.left)
+                            / target_resolution
                         )
                     ),
                     int(
                         np.ceil(
-                            (chunk.target_area.top - chunk.target_area.bottom) / 5.0
+                            (chunk.target_area.top - chunk.target_area.bottom)
+                            / target_resolution
                         )
                     ),
                 )

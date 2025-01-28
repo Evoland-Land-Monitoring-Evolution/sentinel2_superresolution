@@ -1,0 +1,6 @@
+{
+"model" : "carn_3x3x64g4sw_bootstrap.onnx",
+"bands" : [ "B2", "B3", "B4", "B8", "B5", "B6", "B7", "B8A", "B11", "B12", ],
+"margin" : 32,
+"factor" : 2.
+}

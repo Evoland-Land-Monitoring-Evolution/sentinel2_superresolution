@@ -1,1 +1,2 @@
 include src/sentinel2_superresolution/models/*.onnx
+include src/sentinel2_superresolution/models/*.yaml

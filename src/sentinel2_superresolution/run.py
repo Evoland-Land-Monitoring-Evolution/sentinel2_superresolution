@@ -19,6 +19,19 @@ from sensorsio.sentinel2_l1c import Sentinel2L1C
 from sensorsio.utils import bb_snap
 from tqdm import tqdm
 
+L2A2L1C_BANDS_MAP = {
+    "B2": "B02",
+    "B3": "B03",
+    "B4": "B04",
+    "B5": "B05",
+    "B6": "B06",
+    "B7": "B07",
+    "B8": "B08",
+    "B8A": "B8A",
+    "B11": "B11",
+    "B12": "B12",
+}
+
 
 @dataclass(frozen=True)
 class ModelParameters:
@@ -251,7 +264,9 @@ def main(args):
     if args.l1c:
         s2_ds = Sentinel2L1C(args.input)
         # Bands that will be processed
-        bands = [Sentinel2L1C.Band(b) for b in model_parameters.bands]
+        bands = [
+            Sentinel2L1C.Band(L2A2L1C_BANDS_MAP[b]) for b in model_parameters.bands
+        ]
         level = "_L1C_"
     else:
         s2_ds = Sentinel2(args.input)

@@ -16,6 +16,7 @@ import yaml
 from affine import Affine  # type: ignore[import-untyped]
 from sensorsio.sentinel2 import Sentinel2
 from sensorsio.sentinel2_l1c import Sentinel2L1C
+from sensorsio.sentinel2_l3a import Sentinel2L3A
 from sensorsio.utils import bb_snap
 from tqdm import tqdm
 
@@ -169,6 +170,9 @@ def parse_args(args):
         "--l1c", action="store_true", help="Input product is Sentinel2 L1C"
     )
     parser.add_argument(
+        "--l3a", action="store_true", help="Input product is Sentinel2 L3A"
+    )
+    parser.add_argument(
         "-o",
         "--output_directory",
         type=str,
@@ -268,6 +272,13 @@ def main(args):
             Sentinel2L1C.Band(L2A2L1C_BANDS_MAP[b]) for b in model_parameters.bands
         ]
         level = "_L1C_"
+    elif args.l3a:
+        s2_ds = Sentinel2L3A(args.input)
+        # Bands that will be processed
+        bands = [
+            Sentinel2L3A.Band(b) for b in model_parameters.bands
+        ]
+        level = "_L3A_"
     else:
         s2_ds = Sentinel2(args.input)
         # Bands that will be processed

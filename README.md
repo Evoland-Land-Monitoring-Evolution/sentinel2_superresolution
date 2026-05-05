@@ -1,5 +1,7 @@
- [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
- [![Release Version](https://img.shields.io/github/v/tag/Evoland-Land-Monitoring-Evolution/sentinel2_superresolution)](https://github.com/Evoland-Land-Monitoring-Evolution/sentinel2_superresolution/tags)
+[![Build](https://github.com/pjtys/sentinel2_superresolution/actions/workflows/python-app.yml/badge.svg)](https://github.com/pjtys/sentinel2_superresolution/actions/workflows/python-app.yml)
+[![Ruff](https://github.com/pjtys/sentinel2_superresolution/actions/workflows/python-ruff.yml/badge.svg)](https://github.com/pjtys/sentinel2_superresolution/actions/workflows/python-ruff.yml)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Release Version](https://img.shields.io/github/v/tag/Evoland-Land-Monitoring-Evolution/sentinel2_superresolution)](https://github.com/Evoland-Land-Monitoring-Evolution/sentinel2_superresolution/tags)
 
 # Sentinel-2 SuperResolution
 

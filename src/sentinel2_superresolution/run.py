@@ -117,6 +117,7 @@ def generate_chunks(
 
     return chunks
 
+
 # ---- CLI ----
 # The functions defined in this section are wrappers around the main Python
 # API allowing them to be called directly from the terminal as a CLI
@@ -274,9 +275,7 @@ def main(args):
     elif args.l3a:
         s2_ds = Sentinel2L3A(args.input)
         # Bands that will be processed
-        bands = [
-            Sentinel2L3A.Band(b) for b in model_parameters.bands
-        ]
+        bands = [Sentinel2L3A.Band(b) for b in model_parameters.bands]
         level = "_L3A_"
     else:
         s2_ds = Sentinel2(args.input)

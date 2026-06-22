@@ -1,9 +1,6 @@
 #+begin_html
-<a href="https://github.com/pjtys/sentinel2_superresolution/actions/workflows/python-app.yml">
-<img alt="Build" src="https://github.com/pjtys/sentinel2_superresolution/actions/workflows/python-app.yml/badge.svg" />
-</a>
-<a href="https://github.com/pjtys/sentinel2_superresolution/actions/workflows/python-ruff.yml">
-<img alt="Ruff" src="https://github.com/pjtys/sentinel2_superresolution/actions/workflows/python-ruff.yml/badge.svg" />
+<a href="https://github.com/pjtys/sentinel2_superresolution/actions/workflows/ci.yml">
+<img alt="Build" src="https://github.com/pjtys/sentinel2_superresolution/actions/workflows/ci.yml/badge.svg" />
 </a>
 <a href="https://opensource.org/licenses/Apache-2.0">
 <img alt="License" src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" />

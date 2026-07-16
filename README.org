@@ -30,7 +30,7 @@ Julien Michel, Ekaterina Kalinicheva, Jordi Inglada. Revisiting remote sensing c
   - [[#using-l1c-product-as-input][Using L1C product as input]]
   - [[#inference-on-gpu][Inference on GPU]]
 - [[#additional-models][Additional models]]
-- [[#docker-cwl][Docker & CWL]]
+- [[#docker-cwl][Docker and CWL]]
   - [[#docker-image][Docker Image]]
   - [[#cwl-workflow][CWL Workflow]]
 - [[#changelog][Changelog]]
@@ -142,7 +142,7 @@ The ~yaml~ can then be passed to the ~-m~ switch of ~sentinel2_superresolution~.
 
 Merge Requests are welcome if you want o include your own model in the models distributed with the tool.
 
-* Docker & CWL
+* Docker and CWL
 
 ** Docker Image
 

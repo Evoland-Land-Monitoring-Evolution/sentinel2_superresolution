@@ -150,17 +150,22 @@ The sentinel2_superesolution app can also be packaged as a docker image as such:
 
 #+begin_src shell
 docker build -f Dockerfile -t sentinel2_superresolution:latest ./ 
-docker run --rm -v /media/data/sandbox/s2sr:/data sentinel2_superresolution:latest \
+#+end_src
+
+or directly pulled from the dockerhub:
+
+#+begin_src shell
+docker pull cnes/sentinel2_superresolution:X.Y.Z
+#+end_src
+
+The folder containing input products must be binded to the container using th ~-v~ flag, and the optional ~--gpus~ flag can be used to expose the GPUs to the container.
+
+#+begin_src shell
+docker run --rm --gpus -v /media/data/sandbox/s2sr:/data sentinel2_superresolution:latest \
   python /app/run.py -i /data/S2A_MSIL1C_20250317T104811_N0511_R051_T31TCJ_20250317T132621.SAFE \
   --l1c --bicubic --region_of_interest_pixel 7200 6800 7700 7200 \
   --model /app/src/sentinel2_superresolution/models/carn_3x3x64g4sw_bootstrap.yaml \
   -o /data/results
-#+end_src
-
-or directly pulled from the dockerhub :
-
-#+begin_src shell
-docker pull cnes/sentinel2_superresolution:X.Y.Z
 #+end_src
 
 ** CWL Workflow

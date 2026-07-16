@@ -152,6 +152,9 @@ The ~yaml~ can then be passed to the ~-m~ switch of ~sentinel2_superresolution~.
 Merge Requests are welcome if you want o include your own model in the models distributed with the tool.
 
 * Docker & CWL
+:PROPERTIES:
+:CUSTOM_ID: docker-cwl
+:END:
 
 ** Docker Image
 

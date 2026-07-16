@@ -1,6 +1,6 @@
 #+begin_html
 <a href="https://github.com/Evoland-Land-Monitoring-Evolution/sentinel2_superresolution/actions/workflows/docker.yml">
-<img alt="Build" src="https://github.com/Evoland-Land-Monitoring-Evolution/sentinel2_superresolution/actions/workflows/docker.yml/badge.svg" />
+<img alt="Docker" src="https://github.com/Evoland-Land-Monitoring-Evolution/sentinel2_superresolution/actions/workflows/docker.yml/badge.svg" />
 </a>
 #+end_html
 
@@ -30,7 +30,7 @@ Julien Michel, Ekaterina Kalinicheva, Jordi Inglada. Revisiting remote sensing c
   - [[#using-l1c-product-as-input][Using L1C product as input]]
   - [[#inference-on-gpu][Inference on GPU]]
 - [[#additional-models][Additional models]]
-- [[#docker-cwl][Docker and CWL]]
+- [[#docker-cwl][Docker & CWL]]
   - [[#docker-image][Docker Image]]
   - [[#cwl-workflow][CWL Workflow]]
 - [[#changelog][Changelog]]
@@ -142,7 +142,7 @@ The ~yaml~ can then be passed to the ~-m~ switch of ~sentinel2_superresolution~.
 
 Merge Requests are welcome if you want o include your own model in the models distributed with the tool.
 
-* Docker and CWL
+* Docker & CWL
 
 ** Docker Image
 

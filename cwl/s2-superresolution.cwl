@@ -80,7 +80,7 @@ $graph:
 
 - class: CommandLineTool
   id: download_data
-  doc: "ETF Step - Telechargement du produit d'entrée depuis un S3"
+  doc: "ETL Step - Download input product from S3 storage."
 
   requirements:
     InlineJavascriptRequirement: {}
@@ -122,7 +122,7 @@ $graph:
 
 - class: CommandLineTool
   id: s2_superresolution
-  doc: "SuperResolution Step - Execution de la superresolution S2"
+  doc: "SuperResolution Step - Execute S2 SuperResolution"
 
   requirements:
     DockerRequirement:
